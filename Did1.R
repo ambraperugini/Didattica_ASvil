@@ -5,6 +5,7 @@ rm(list = ls()) # a cosa serve?
 #########################
 # pacchetti di oggi
 
+library(foreign)
 library(psych)
 library(DataExplorer)
 library(readxl)
@@ -51,21 +52,63 @@ setwd()
 
 getwd()
 
-
 ########################
+
+# Es. 1.10 
+
+# 1.10.1
+
 # Come importare i dati, diversi tipi di file
 
 # x file txt
-dati <- read.table("Sara_dataset.txt", header = TRUE, sep = " ")
+dati_txt <- read.table("dati/Sara_dataset.txt", header = TRUE, sep = "")
 
 # library(readxl) x file xls/xlsx
-dati <- read_xls("Sara_dataset.xls")
+dati_xls <- read_xls("dati/Sara_dataset.xls")
 
-# x file csv
-dati <- read.csv("Sara_dataset.csv")
+# x file sav
+dati_sav <- read.spss("dati/Sara_dataset.sav", to.data.frame = TRUE)
 
-dati <- Sara_dataset[,-1]
+# 1.10.2
 
+str(Sara_txt)
+str(Sara_sav)
+str(Sara_xls)
+
+summary(Sara_txt)
+
+table(Sara_txt$major)
+table(Sara_txt$mathquiz)
+
+table(Sara_xls[,4])
+table(table(Sara_xls[,4]))
+
+table(Sara_txt[,4])
+table(table(Sara_txt[,4]))
+
+# 1.10.4
+
+dati_sav[57,]
+
+dati_sav$hr_base
+
+mean(dati_sav$hr_base)
+median(dati_sav$hr_base)
+sd(dati_sav$hr_base)
+min(dati_sav$hr_base)
+max(dati_sav$hr_base)
+
+hist(Sara_xls$hr_base, breaks = 15, col = "purple")
+hist(Sara_xls$hr_base, breaks = 15, col = "#b2bea6")
+hist(dati_sav$hr_base, breaks = 15, col = "#c6a5c2")
+
+boxplot(dati_sav$hr_base,col = "#ad7c85")
+
+sum(is.na(Sara_xls$mathquiz))
+
+
+
+############### codici utili
 # Esplorazione e manipolazione dei dati in R
 # Ispezionare il dataset
 
@@ -124,4 +167,12 @@ dati_ordinati <- dati[order(dati$mathquiz), ]
 # Salvare il dataset modificato
 write.csv(dati_ordinati, file = "Sara_dataset")
 write.table(dati_ordinati, file="Sara_dataset")
+
+
+
+
+
+
+
+
 
