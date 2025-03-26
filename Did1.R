@@ -107,6 +107,105 @@ boxplot(dati_sav$hr_base,col = "#ad7c85")
 sum(is.na(Sara_xls$mathquiz))
 
 
+# LEZIONE 20/03
+
+# es. 1.11
+
+# In un reparto psichiatrico di un ospedale del nord Italia 
+# sono ricoverati 30 pazienti. Per ciascuno di essi sono state
+# rilevate le seguenti informazioni: regione di residenza, 
+# classe sociale (definita età), tipo di disturbo presentato,
+# come bassa, media e alta), punteggio su una scala di ansia 
+# (0 = poco ansioso, 7 = molto ansioso),
+# I dati sono raccolti nelle pazienti.xls3.
+
+# 1. Si importi il file in R.
+
+rm(list=ls())
+
+library(readxl)
+pazienti <- read_excel("C:/Users/peruamb13370/Desktop/pazienti.xls")
+
+# 2. Si specifichi il livello di misura di ciascuna variabile del data-set.
+
+str(pazienti)
+summary(pazienti)
+head(pazienti)
+
+# 3. Si produca la tabella di frequenze di ciascuna variabile del data-set
+# nel modo più opportuno.
+
+table(pazienti$cl.sociale)
+pazienti$cl.sociale <- ordered(pazienti$cl.sociale, 
+                               levels = c("Bassa", "Media", "Alta"))
+
+str(pazienti$cl.sociale)
+
+table(pazienti$regione)
+cumsum(table(pazienti$regione)/length(pazienti$regione))
+(table(pazienti$regione)/length(pazienti$regione))
+
+
+table(pazienti$cl.sociale)
+
+# Si producano i grafici a barre o istogrammi delle variabili del data-set.
+
+head(pazienti)
+par(mfrow = c(1,2))
+barplot(table(pazienti$cl.sociale), col="green", main = "classe sociale")
+hist(pazienti$ansia, breaks = 15, main = "ansia")
+barplot(table(pazienti$regione))
+
+# Si producano i grafici delle cumulate empiriche 
+# per le variabili per cui abbia senso.
+par(mfrow = c(1,1))
+barplot(cumsum(table(pazienti$regione)/length(pazienti$regione)))
+
+# es. 4.4
+
+# Nel autor.dat sono riportati i punteggi di 12 soggetti su una 
+# scala di autoritarismo ed una di pregiudizi sociali 
+# (dati: Siegel & Castellan, 1992).
+# Ci si chiede se vi sia una relazione significativa tra il livello
+# di autoritarismo e il livello di pregiudizio dei soggetti interpellati.
+
+# 1. Si importi il file autor.dat in R assegnandogli nome AP.
+
+AP <- read.table(file.choose(), header = TRUE)
+
+AP <- read.table("C:/Users/peruamb13370/Desktop/autor.dat", header = TRUE)
+
+# 2. Si identifichino unità statistiche e variabili del data-frame. Per ciascuna variabile si
+# definiscano le proprietà metriche.
+
+str(AP)
+summary(AP)
+
+# 3. Si calcoli il campo di variazione dei punteggi di autoritarismo e pregiudizio.
+
+range(AP$aut)
+
+range(AP$preg)
+
+# 4. Si determini l'80° percentile della variabile autoritarismo.
+
+quantile(AP$aut, .80)
+
+# Si rappresenti graficamente la distribuzione dei punteggi di autoritarismo (in ascissa) e
+# pregiudizio (in ordinata); sulla base del grafico ottenuto si ipotizzi un valore plausibile di
+# correlazione.
+
+plot(AP$aut, AP$preg, pch = 19, col = "blue")
+
+abline(lm(preg ~ aut, data = AP))
+
+
+# 5. Si calcolino covarianza e correlazione tra autoritarismo e pregiudizio e si interpretino.
+
+cov(AP$aut, AP$preg)
+
+cor(AP$aut, AP$preg)
+
 
 ############### codici utili
 # Esplorazione e manipolazione dei dati in R
