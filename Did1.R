@@ -260,3 +260,186 @@ cov(AP$aut, AP$preg)
 
 cor(AP$aut, AP$preg)
 
+######## Es. 4.5 ##########
+
+# Al campione di soggetti dell’esercizio 4.4 si aggiunge un nuovo soggetto
+# che ottiene i seguenti punteggi: 55 nell’autoritarismo e 85 nel pregiudizio.
+
+# 1. Si aggiunga il soggetto al data-frame AP (ottenuto al punto 1 dell’esercizio 4.4)
+
+AP <- rbind(AP,c(13,55,85))
+
+# 2. Si rappresenti nuovamente la distribuzione dei punteggi di autoritarismo e pregiudizio;
+# sulla base del grafico ottenuto si ipotizzi un valore plausibile di correlazione.
+
+plot(AP$aut, AP$preg)
+
+# 3. Si calcolino covarianza e correlazione tra autoritarismo e pregiudizio e si interpretino.
+
+cov(AP$aut,AP$preg) # covarianza
+
+cor(AP$aut,AP$preg) # correlazione
+
+# 4. Quali considerazioni si possono fare su questo ultimo soggetto, 
+# confrontando le stime di correlazione ottenute con quelle dell’esercizio precedente?
+
+############# Es. 4.6 ############
+
+# Il file Hooker.dat contiene dati raccolti da J.Hooker sulle montagne 
+# dell’Himalaya (cfr. Wei- sberg, 1985). Tali dati rappresentano le 
+# temperature in gradi Fahrenheit (variabile temp) di ebollizione dell’acqua 
+# a diversi valori di pressione atmosferica (mmhg; variabile press).
+
+# 1. Si importi il file Hooker.dat in R.
+
+X <- read.table( file.choose(), header = TRUE )
+
+# 2.Si identifichino unità statistiche e variabili del data-frame. 
+# Per ciascuna variabile si definiscano le proprietà metriche.
+
+str(X)
+summary(X)
+
+# 3. Si calcolino moda, mediana e media della variabile temp. 
+# Sulla base del risultato si valuti se la distribuzione di tale 
+# variabile possa considerarsi simmetrica.
+
+library( ADati )
+moda(X$temp); median(X$temp); mean(X$temp)
+
+# 4. Si valuti con un grafico opportuno la simmetria della distribuzione.
+
+par( mfrow = c( 1, 2 ) )
+hist( X$temp, col = 'violet', xlab = 'temperatura', main = '' )
+boxplot( X$temp, col = 'red' )
+
+# 5. Si produca un grafico in quattro parti (utilizzando il comando layout() 
+# oppure par()) con i boxplot e qqplot per le variabili press e temp.
+
+par( mfrow = c( 2, 2 ) )
+boxplot( X$press, col = 'lightblue', main = 'pressione' )
+boxplot( X$temp, col = 'lightblue', main = 'temperatura' )
+qqnorm( X$press, col = 'red', pch = 19 )
+qqline( X$press )
+qqnorm( X$temp, col = 'red', pch = 19 )
+qqline( X$temp )
+
+# 6. Si produca il diagramma di dispersione relativo alle variabili press e 
+# temp valutando se sia ipotizzabile una relazione lineare.
+
+par( mfrow = c( 1, 1 ) )
+plot( temp ~ press, data = X, pch = 19 )
+
+# 7. Si calcolino covarianza e correlazione tra le variabili press e temp.
+
+cov( X$press, X$temp ) # covarianza
+
+cor( X$press, X$temp ) # correlazione
+
+# 8. Si stimino i parametri della retta di regressione.
+
+library(rstanarm)
+
+fit <- stan_glm( temp ~ press, data = X, seed = 3 )
+
+fit_lm <- lm( temp ~ press, data = X )
+
+
+# 9. Si valutino graficamente gli assunti del modello utilizzando i 
+# grafici dei residui ed individuando la presenza di eventuali casi anomali o influenti.
+
+library( performance )
+check_model( fit, 
+             check = c("linearity","qq","homogeneity","outliers") )
+
+pp_check( fit, nreps = 50 )
+
+# 10. Si valuti se la stima del parametro β1 sia statisticamente significativa, 
+# definendo le ipotesi H0 e H1.
+
+coef(fit)
+
+# 11. Si aggiunga al grafico ottenuto al punto 6 la retta di regressione teorica.
+
+plot( temp ~ press, data = X, pch = 19 )
+abline( fit, col = "red" )
+
+# 12. Si stimi, sulla base dei parametri calcolati, il valore atteso di 
+# temperatura con una pressione di 27.
+
+# yˆ = 146.79 + 2.25X
+
+coef( fit )[ 1 ] + coef( fit )[ 2 ] * 27
+
+######## Esercizio 5.1 ############
+
+# 1
+
+rm(list=ls())
+
+library(ADati)
+
+data("monkeys")
+
+aggregate(score ~ drug, data = monkeys, FUN = mean)
+aggregate(score ~ drug, data = monkeys, sd)
+aggregate(score ~ fdep, data = monkeys, mean)
+aggregate(score ~ fdep, data = monkeys, sd)
+
+# 3
+
+my <- aggregate( score ~ drug*fdep, data = monkeys, mean )
+sy <- aggregate( score ~ drug*fdep, data = monkeys, sd )
+myData <- data.frame( my, sy = sy$score )
+colnames( myData ) <- c( "drug", "fdep", "media", "ds" )
+
+myData$fdep <- factor( myData$fdep )
+myData$up <- myData$media + myData$ds
+myData$low <- myData$media - myData$ds
+myData$x <- 1:3 + rep(c(-.05,.05),each = 3)
+
+# con errbar
+library( Hmisc )
+plot( media ~ x, data = myData, type = "n", 
+      axes = FALSE, xlab = "tipo di farmaco", ylab = "risposte corrette", 
+      ylim = c(0,18), xlim = c(.5,3.5))
+with( myData, errbar( x, media, up, low, add = TRUE, errbar.col = fdep, 
+                      col = fdep ) )
+axis(1, 1:3, unique(myData$drug))
+axis(2)
+box()
+
+# con ggplot2
+library( ggplot2 )
+ggplot( myData, aes( x, media, color = fdep )) +
+  geom_pointrange( aes( ymin = low, ymax = up )) +
+  scale_x_continuous( breaks = 1:3, labels = unique(myData$drug) ) + 
+  xlab("tipo di farmaco") 
+
+# 4
+
+library(car)
+
+leveneTest( score ~ drug * factor(fdep), data = monkeys )
+
+library(rstanarm)
+
+fit_1<- stan_glm(score ~ drug + fdep, data = monkeys, seed = 35)
+summary(fit_1)
+
+fit_2<- stan_glm(score ~ drug * fdep, data = monkeys, seed = 35)
+
+summary(fit_2)
+
+loo_fit1<- loo(fit_1)
+loo_fit2<- loo(fit_2)
+
+loo_compare(loo_fit1, loo_fit2)
+
+LIST_models <- list(loo_fit1, loo_fit2)
+WEIGHTS <- loo_model_weights(LIST_models)
+
+
+
+
+
