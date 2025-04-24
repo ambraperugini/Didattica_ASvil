@@ -522,14 +522,14 @@ check_model( fit,
 pp_check( fit, nreps = 50 )
 
 
-############# es. 5.5 #################
+############# Es. 5.5 #################
 
 rm(list = ls())
 
 # 1
 
 library(foreign)
-X <- read.spss("C:/Users/peruamb13370/Desktop/auto.sav", to.data.frame = TRUE)
+X <- read.spss("~/Documents/Work/didattica/Didattica_ASvil/dati/auto.sav", to.data.frame = TRUE)
 
 # 2
 
@@ -590,13 +590,70 @@ loo_model_weights(loo_list)
 
 # 8
 
-coef( fit_peso )[ 1 ] + X$peso[ is.na( X$consumo ) ] * coef( fit_peso )[ 2 ]
+coef( fit3 )[ 1 ] + X$peso[ is.na( X$consumo ) ] * coef( fit3 )[ 2 ]
 
 Xna <- subset( X, is.na(consumo) )[,-1]
-apply( posterior_predict( fit_peso, newdata = Xna ), 2, mean )
+apply( posterior_predict( fit3, newdata = Xna ), 2, mean )
 
 
+########### Es. 6.4 ################
 
+rm(list=ls())
+
+# 1
+
+X <- read.csv("~/Documents/Work/didattica/Didattica_ASvil/dati/mood.dat", sep="")
+X <- read.table( file.choose(), header = TRUE )
+
+# 2
+
+boxplot( X[ , -1 ], col = 'pink' )
+
+# 3
+
+points( 1:3, apply( X[ , -1 ], 2, mean ), col = 'red', type = 'b' , pch = 19 )
+points( 1:3, apply( X[ , -1 ], 2, median ), col = 'blue', type = 'b' , pch = 19 )
+
+# 4
+
+cov( X[ , -1 ] )
+
+cor( X[ , -1 ] )
+
+# 5
+
+library(rstanarm)
+
+Y <- stack( X[ , c( "t0", "t1", "t2" ) ] )
+Y$subj <- X$subj
+
+fit <- stan_glm(values ~ ind, data = Y)
+pp_check(fit)
+
+library( performance )
+check_model( fit, 
+             check = c("linearity","qq","homogeneity","outliers") )
+
+
+# 6
+
+fit_rm <- stan_glmer(values ~ ind + ( 1|subj ), data = Y)
+posterior_interval(fit_rm, pars = c("(Intercept)", "indt1", "indt2"), prob = .90)
+pp_check(fit_rm)
+
+check_model( fit_rm, 
+             check = c("linearity","qq","homogeneity","outliers") )
+
+
+# 7
+
+plot(fit_rm)
+
+# 8
+
+loo_list <- list(m0 = loo(fit), m1 = loo(fit_rm))
+loo_compare(loo_list)  
+loo_model_weights(loo_list)
 
 
 
