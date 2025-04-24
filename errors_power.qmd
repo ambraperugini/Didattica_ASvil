@@ -1,0 +1,46 @@
+---
+title: "Type I error, Type II error & Power"
+format:
+  revealjs:
+    code-line-numbers: false
+    theme: default
+    slide-number: c/t
+    self-contained: true
+    code-fold: true
+    code-summary: "Show code"
+    code-overflow: wrap
+execute:
+  echo: true
+  output: true
+---
+
+## Errore o Verità? La statistica tra decisioni e incertezze
+
+\
+
+Quando testiamo un'ipotesi, ci concentriamo spesso solo sulla sigificatività per decidere se sia vera o meno.
+
+Ma dovremmo anche chiederci: e se ci sbagliassimo? Ripassiamo cosa significa davvero fare un errore di tipo I o II e come la potenza del test può aiutarci.
+
+## {.smaller}
+
+-   $\alpha$ è il type I error, quindi la probabilità di avere un falso positivo
+-   $\beta$ è il type II error, quindi la probabilità di avere un falso negativo
+
+![](img/typerror.jpeg){fig-align="center"}
+
+## Tabella riassuntiva {.smaller}
+
+\
+
+|                         | **$H_0$ vera**                   | **$H_1$ vera ($H_0$ falsa)**                |
+|-------------------------|----------------------------------|---------------------------------------------|
+| **Rigetto $H_0$**       | ❌ Errore di I tipo ($\alpha$)    | ✅ Decisione corretta (Potenza: $1 - \beta$)  |
+| **Non rigetto $H_0$**   | ✅ Decisione corretta ($1 - \alpha$) | ❌ Errore di II tipo ($\beta$)                |
+
+\
+
+Nella realtà non possiamo mai sapere con certezza se l'ipotesi nulla ($H_0$) sia vera o falsa. Per questo motivo, fissiamo in anticipo il livello di significatività $\alpha$, ovvero il rischio che siamo disposti ad accettare di commettere un errore di tipo I (rifiutare $H_0$ quando è vera). Aumentando la dimensione del campione, possiamo ridurre la probabilità di commettere un errore di tipo II ($\beta$) e quindi aumentare la potenza del test ($1 - \beta$).
+
+
+

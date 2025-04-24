@@ -371,7 +371,7 @@ abline( fit, col = "red" )
 
 coef( fit )[ 1 ] + coef( fit )[ 2 ] * 27
 
-######## Esercizio 5.1 ############
+######## Es. 5.1 ############
 
 # 1
 
@@ -438,6 +438,165 @@ loo_compare(loo_fit1, loo_fit2)
 
 LIST_models <- list(loo_fit1, loo_fit2)
 WEIGHTS <- loo_model_weights(LIST_models)
+
+####### Es. 5.2 ########
+
+# 1
+
+rm(list = ls())
+ 
+library(haven)
+T_ingr <- read_sav("dati/testingresso.sav")
+View(T_ingr)
+
+# 2
+
+X <- subset( T_ingr, n_es > 0 )
+
+# 3
+
+library(gplots)
+
+par(mfrow = c(2,2))
+
+plotmeans(media ~ interaction(an_corso, sex), data = X, connect = FALSE)
+
+plotmeans(votodip ~ interaction(an_corso, sex) , data = X, connect = FALSE)
+
+plotmeans(tottest ~ interaction(an_corso, sex) , data = X, connect = FALSE)
+
+plotmeans(n_es ~ interaction(an_corso, sex) , data = X, connect = FALSE)
+
+X$an_corso <- factor(X$an_corso)
+
+fit <- lm(votodip ~ an_corso * sex, data = X)
+
+library(sjPlot)
+
+plot_model(fit, type = "int")
+
+
+# 4
+
+X$prestazione <- (X$media * X$n_es)/(30*max(X$n_es))
+
+# 5
+
+quantile( X$prestazione, seq( .1, .9, .1 ), na.rm = TRUE )
+
+# 6
+
+par(mfrow = c(1,3))
+
+hist( X$prestazione)
+boxplot( X$prestazione)
+qqnorm(X$prestazione)
+
+# 7
+
+cov(X[,c(5,8,9)])
+cor(X[,c(5,8,9)])
+
+# 8
+
+par(mfrow = c(1,2))
+
+plot(X$votodip, X$prestazione)
+
+plot(X$tottest, X$prestazione)
+
+# 9
+
+library(rstanarm)
+
+fit <- stan_glm( prestazione ~ votodip * tottest, data = X )
+
+summary(fit)
+
+posterior_interval(fit)
+
+library( performance )
+check_model( fit, 
+             check = c("linearity","qq","homogeneity","outliers") )
+
+pp_check( fit, nreps = 50 )
+
+
+############# es. 5.5 #################
+
+rm(list = ls())
+
+# 1
+
+library(foreign)
+X <- read.spss("C:/Users/peruamb13370/Desktop/auto.sav", to.data.frame = TRUE)
+
+# 2
+
+mx <- aggregate(consumo ~ anno * origine, data = X, mean)
+aggregate(consumo ~ anno * origine, data = X, sd)
+
+# 3
+
+library(ggplot2)
+
+ggplot(mx, aes(anno, consumo, color=origine, group=origine))+
+  geom_line() + geom_point() + ylab("consumo")
+
+# 4
+par(mfrow=c(1,3))
+qqnorm( X$consumo[X$origine=="Italia"] )
+qqnorm( X$consumo[X$origine=="Giappone"] )
+qqnorm( X$consumo[X$origine=="Europa"] )
+
+shapiro.test( X$consumo[X$origine=="Italia"])
+shapiro.test( X$consumo[X$origine=="Giappone"] )
+shapiro.test(  X$consumo[X$origine=="Europa"] )
+
+
+ks.test(X$consumo[X$origine=="Italia"], X$consumo[X$origine=="Giappone"]  )
+
+# 5
+
+par( mfrow = c(2,2))
+
+plot(consumo ~ motore, data = X )
+plot(consumo ~ cv, data = X )
+plot(consumo ~ peso, data = X )
+plot(consumo ~ cilindri, data = X )
+
+
+# 6
+
+library(rstanarm)
+
+fit <- stan_glm(consumo ~ motore + cv + peso + cilindri, data = X, seed = 3)
+
+posterior_interval(fit, pars = c("motore", "cv", "peso", "cilindri"), prob = .90)
+
+
+# 7
+
+Z <- na.omit(X)
+
+fit1 <- stan_glm(consumo ~ motore, data = Z, seed = 3)
+fit2 <- stan_glm(consumo ~  cv , data = Z, seed = 3)
+fit3 <- stan_glm(consumo ~ peso , data = Z, seed = 3)
+fit4 <- stan_glm(consumo ~  cilindri, data = Z, seed = 3)
+
+loo_list <- list(motore = loo(fit1), cv = loo(fit2), peso = loo(fit3), cilindri = loo(fit4))
+loo_compare(loo_list)  
+loo_model_weights(loo_list)
+
+# 8
+
+coef( fit_peso )[ 1 ] + X$peso[ is.na( X$consumo ) ] * coef( fit_peso )[ 2 ]
+
+Xna <- subset( X, is.na(consumo) )[,-1]
+apply( posterior_predict( fit_peso, newdata = Xna ), 2, mean )
+
+
+
 
 
 
